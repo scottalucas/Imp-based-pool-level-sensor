@@ -1,0 +1,916 @@
+server.setsendtimeoutpolicy(RETURN_ON_ERROR, WAIT_TIL_SENT, 30.0);
+
+class Fdc2112 {
+    
+    static class_name = "Fdc2112"
+    
+    static _registers = {
+        data_ch0 = {location = "\x00", mask = 0x3fff} //in json schema
+        data_ch1 = {location = "\x02", mask = 0x3fff} //in json schema
+        data_ch2 = {location = "\x04", mask = 0x3fff} //in json schema
+        data_ch3 = {location = "\x06", mask = 0x3fff} //in json schema
+        rcount_ch0 = {location = "\x08", mask = 0xffff} //in json schema
+        rcount_ch1 = {location = "\x09", mask = 0xffff} //in json schema
+        rcount_ch2 = {location = "\x0a", mask = 0xffff} //in json schema
+        rcount_ch3 = {location = "\x0b", mask = 0xffff} //in json schema
+        offset_ch0 = {location = "\x0c", mask = 0xffff} //in json schema
+        offset_ch1 = {location = "\x0d", mask = 0xffff} //in json schema
+        offset_ch2 = {location = "\x0e", mask = 0xffff} //in json schema
+        offset_ch3 = {location = "\x0f", mask = 0xffff} //in json schema
+        settlecount_ch0 = {location = "\x10", mask = 0xffff} //in json schema
+        settlecount_ch1 = {location = "\x11", mask = 0xffff} //in json schema
+        settlecount_ch2 = {location = "\x12", mask = 0xffff} //in json schema
+        settlecount_ch3 = {location = "\x13", mask = 0xffff} //in json schema
+        clock_dividers_ch0 = {location = "\x14", mask = 0x33ff} //in json schema
+        clock_dividers_ch1 = {location = "\x15", mask = 0x33ff} //in json schema
+        clock_dividers_ch2 = {location = "\x16", mask = 0x33ff} //in json schema
+        clock_dividers_ch3 = {location = "\x17", mask = 0x33ff} //in json schema
+        status = {location = "\x18", mask = 0xce4f} //in json schema
+        error_config = {location = "\x19", mask = 0x3821} //in json schema
+        config = {location = "\x1a", mask = 0xeac0} //in json schema
+        mux_config = {location = "\x1b", mask = 0xe007} //in json schema
+        reset_dev = {location = "\x1c", mask = 0x8600} //in json schema        
+        drive_current_ch0 = {location = "\x1e", mask = 0xf800} //in json schema
+        drive_current_ch1 = {location = "\x1f", mask = 0xf800} //in json schema
+        drive_current_ch2 = {location = "\x20", mask = 0xf800} //in json schema
+        drive_current_ch3 = {location = "\x21", mask = 0xf800} //in json schema
+        manufacturer_id = {location = "\x7e", mask = 0xffff} //in json schema
+        device_id = {location = "\x7f", mask = 0xffff} //in json schema
+        data0 = {location = "\x00", mask = 0x0fff}
+        data1 = {location = "\x02", mask = 0x0fff}
+        data2 = {location = "\x04", mask = 0x0fff}
+        data3 = {location = "\x06", mask = 0x0fff}
+        fin_sel_ch0 = {location = "\x14", mask = 0x3000}
+        fin_sel_ch1 = {location = "\x15", mask = 0x3000}
+        fin_sel_ch2 = {location = "\x16", mask = 0x3000}
+        fin_sel_ch3 = {location = "\x17", mask = 0x3000}
+        fref_divider_ch0 = {location = "\x14", mask = 0x03ff}
+        fref_divider_ch1 = {location = "\x15", mask = 0x03ff}
+        fref_divider_ch2 = {location = "\x16", mask = 0x03ff}
+        fref_divider_ch3 = {location = "\x17", mask = 0x03ff}
+        wd_err2out = {location = "\x19", mask = 0x2000}
+        ah_warn2out = {location = "\x19", mask = 0x1000}
+        al_warn2out = {location = "\x19", mask = 0x0800}
+        wd_err2int = {location = "\x19", mask = 0x0020}
+        drdy_2int = {location = "\x19", mask = 0x0001}
+        active_chan  = {location = "\x1a", mask = 0xc000}
+        sleep_mode_en = {location = "\x1a", mask = 0x2000}
+        sensor_activate_sel = {location = "\x1a", mask = 0x0800}
+        ref_clk_src = {location = "\x1a", mask = 0x0200}
+        intb_dis = {location = "\x1a", mask = 0x0080}
+        high_current_drv = {location = "\x1a", mask = 0x0040}
+        autoscan_en = {location = "\x1b", mask = 0x8000}
+        rr_sequence = {location = "\x1b", mask = 0x6000}
+        deglitch = {location = "\x1b", mask = 0x0007}
+        reset_dev_dr = {location = "\x1c", mask = 0x8000}
+        output_gain = {location = "\x1c", mask = 0x0600}
+        err_wd_ch0 = {location = "\x00", mask = 0x2000}        
+        err_wd_ch1 = {location = "\x02", mask = 0x2000}        
+        err_wd_ch2 = {location = "\x04", mask = 0x2000}        
+        err_wd_ch3 = {location = "\x06", mask = 0x2000}
+        err_aw_ch0 = {location = "\x00", mask = 0x1000}        
+        err_aw_ch1 = {location = "\x02", mask = 0x1000}        
+        err_aw_ch2 = {location = "\x04", mask = 0x1000}        
+        err_aw_ch3 = {location = "\x06", mask = 0x1000}
+        err_chan = {location = "\x18", mask = 0xc000}
+        err_wd = {location = "\x18", mask = 0x0800}
+        err_ahw = {location = "\x18", mask = 0x0400}
+        err_alw = {location = "\x18", mask = 0x0200}
+        drdy = {location = "\x18", mask = 0x0040}
+        unread_ch0 = {location = "\x18", mask = 0x0008}
+        unread_ch1 = {location = "\x18", mask = 0x0004}
+        unread_ch2 = {location = "\x18", mask = 0x0002}
+        unread_ch3 = {location = "\x18", mask = 0x0001}
+        }
+
+    _name=null
+    _recipe = null
+    _sensors = array(4)
+
+// the following assignments will be used as the defaults unless the user overrides with specific values in the constructor
+    _i2c = hardware.i2c12
+    _i2cSpeed = CLOCK_SPEED_400_KHZ
+    _addr = 0x54
+    _chip_prop = {
+        intb_dis = null
+        active_chan = null
+        sensor_activate_sel = null
+        ref_clk_src = null
+        high_current_drv = null
+        rr_sequence = null
+        deglitch = null
+        output_gain = null
+        autoscan_en = null
+    }
+    _calibration = null
+
+    constructor(name, sensor_package, recipe=null, i2c=null, i2cSpeed=null, addr=null, useInt=null, activeChan = null, sensorActivateSelect = null, refClkSrc = null, highCurrentDrv = null, rrSeq = null, deglitch = null, outputGain = null, autoscan = null) 
+    //          1     2               3            4         5              6          7            8                  9                            10                11                     12            13               14                 15
+    {
+        _name = name
+        _sensors = sensor_package
+        _i2c = (i2c != null) ? i2c : _i2c
+        _i2cSpeed = (i2cSpeed != null) ? i2cSpeed : _i2cSpeed
+        _addr = (addr != null) ? addr : _addr
+        _recipe = recipe
+        _chip_prop = {
+            intb_dis = useInt
+            active_chan = activeChan
+            sensor_activate_sel = sensorActivateSelect
+            ref_clk_src = refClkSrc
+            high_current_drv = highCurrentDrv
+            rr_sequence = rrSeq
+            deglitch = deglitch
+            output_gain = outputGain
+            autoscan_en = autoscan
+        }
+        foreach (idx, sensor in _sensors) {
+            sensor._channel = idx
+            sensor._chip = this
+        }
+        initialize()
+    }
+    
+    function reset () { //returns true or false, resets the chip to default values
+        return i2cWrite(_registers.reset_dev_dr.location + "\x80\x00")
+    }
+
+    function initialize() {
+        //server.log("Initializing chip")
+        _i2c.configure(_i2cSpeed)
+        sensorShutdown.write(0)
+        imp.sleep(1)
+        if (server.isconnected()) {
+            local check = _i2c.read(_addr,_registers.device_id.location,2)
+            if (!check) {server.log("Error initializing sensor chip: " + _i2c.readerror())}
+            else {//server.log("Sensor chip initialized")
+            }
+        }
+        
+        reset()
+        if (_recipe != null) {
+//            server.log("Building chip from recipe.")
+            local ingredients = buildJSONTable(_recipe)
+            foreach (item, value in ingredients) {
+                if (!(item in _registers)) {
+                    server.error(item + " not found in chip registers.")
+                }
+                else {
+                    set_value(item, value)
+                }
+            }
+        }
+        
+        //if the values get here as 'null,' then we won't write them and they'll end up as chip defaults
+        foreach (item, value in _chip_prop) {
+            if (value != null) {set_value(item, value)}
+        }
+        foreach (sensor in _sensors) {
+            foreach (item, value in sensor._chip_prop) {
+                if (value == null) {continue}
+                set_value(item + format("_ch%1s", sensor._channel.tostring()), value)
+            }
+        }
+        return
+    }
+
+    function get_value(value_slot, returnType = 0) { //value_slot is a string that matches one of the entries in the _registers table. Returns an int if returnType = 0, a string if returnType = 1
+        if (!returnType) {
+            local mask = _registers[value_slot]["mask"]
+            local v = i2cRead(_registers[value_slot]["location"], 2)
+            return (((v[0] & (mask >> 8)) << 8) + (v[1] & mask)) >> rightZeroes(mask)
+        }
+        else if (returnType == 1) {
+            return i2cRead(_registers[value_slot]["location"], 2)
+        }
+        else {
+            server.error("Invalid return type.")
+            return false
+        }
+    }
+    
+    function set_value(value_slot, setVal) { //value_slot is a string that matches one of the entries in the _registers table. setVal can be an int or a 2-char string. Returns 0 on success, an error code if not.
+        local writeStr
+        local regAddr = _registers[value_slot]["location"]
+        local reply
+        local initRegArr = get_value(value_slot, 1)
+        local mask = _registers[value_slot]["mask"], reply
+        try  {if (setVal.len() == 2) {
+                writeStr = regAddr + format("%c%c" setVal[0], setVal[1])
+            }
+            else {
+                server.log("Tried to write a register with too many or too few strings.")
+                return false
+                }        
+        }
+        catch (error) {
+            //sent as integer
+            local result = array(2)
+            setVal = (setVal << rightZeroes(mask)) & mask
+            result[0] = (initRegArr[0] & ~(mask >> 8)) | ((setVal >> 8) & (mask >> 8))
+            result[1] = ((initRegArr[1] & ~mask) | (setVal & mask) & 0x00ff)
+            writeStr = regAddr + format("%c%c", result[0], result[1])
+        }
+        return i2cWrite(writeStr)
+    }
+
+    function read_sensor (sensorChannel) { //takes the channel number as an int. Make sure you take the chip out of sleep mode before trying to read. Returns a null if the chip is in sleep mode or if the channel does not have new data.
+        if (get_value("sleep_mode_en")) {
+            storeError("Chip is in sleep mode.")
+            //server.error("Chip is in sleep mode.")
+            return null
+        }
+        if(!get_value("unread_ch" + sensorChannel)) {
+            //server.error("Channel " + sensorChannel + " data is stale.")
+            return null
+        }
+        return get_value(format("data_ch%s", sensorChannel.tostring()))
+    }
+    
+    function name() {return _name} //returns the name of the chip
+    
+//--------------PRIVATE FUNCTIONS----------------------------    
+
+    function charHexToArr (inputString) { //takes an input string as provided by the recipe file and turns it into a char array usable by the chip.
+        local outArr = array(2), item
+        try {item = format("%04s", split(inputString.toupper(), "X")[1])}
+        catch (error) {server.error("Illegal value provided to charHexToArr routine.");return null;}
+        outArr[0] = ((item[0] - (item[0] > 57 ? 55 : 48)) << 4) | (item[1] - (item[1] > 57 ? 55 : 48))
+        outArr[1] = ((item[2] - (item[2] > 57 ? 55 : 48)) << 4) | (item[3] - (item[3] > 57 ? 55 : 48))
+        return outArr
+    }
+
+    function buildJSONTable (recipe) { //takes an array in recipe format (output by the TI evaluation board) and turns it into an easier-to-use table of values.
+        local valuesTable = {}
+        foreach (key, item in recipe[0]) {
+            valuesTable[item.id] <- charHexToArr(item.value)
+        }
+        return valuesTable
+    }
+    
+    function rightZeroes(mask) { //takes a mask as an int. Function tells you how many zeroes are padding the right of a register. This is used to shift masked values back to the 0 bit for use as integers. Returns an int.
+        return math.ceil((math.log10(((mask - 1) ^ mask) + 1)/math.log10(2)) - 1.5).tointeger()
+    }
+        
+    function i2cRead(location, numBytes) { //takes a string location and an int for how many chars you want to read. Returns a 'numBytes'-char string
+        local result = _i2c.read(_addr, location, numBytes)
+        if (result == null) {storeError("Could not read from chip, error: " + _i2c.readerror());}
+        return result
+    }
+    
+    function i2cWrite(writeString) {
+        local result = _i2c.write(_addr, writeString)
+        if (result != 0) {
+            storeError("Could not write to chip, error: " + result)
+        }
+        return result
+    }
+    
+    function set_prop (property, value) { //takes string for 'property' (should match a chip property) and the appropriate type for value (e.g. the 'name' property takes a string)
+        if (property in _chip_prop) {_chip_prop[property] = value}
+        else {this["_" + property] = value}
+    }
+
+    function get_prop (property) { 
+        if (property in _chip_prop) {return _chip_prop[property]}
+        else {return this["_" + property]}
+    }
+
+    function load_chip () { //loads values saved in the nv to the chip
+        //server.log("Loading chip\r")
+        foreach (item, contents in nv) {
+            switch (item) {
+                case "sensors":
+                    foreach (idx, sensor in contents) {
+                        switch (sensor.name) {
+                            case "not configured":
+                            case "Not configured":
+                                _sensors[idx]._name = "Not configured"
+                            break
+                            default:
+                                foreach (property, value in sensor) {
+                                    set_prop.call(_sensors[idx], property, value)
+                                }
+                                set_prop.call(_sensors[idx], "channel", idx)
+                                set_prop.call(_sensors[idx], "chip", this)
+                            break
+                        }
+                    }
+                    break
+                case "readings":
+                case "errors":
+                case "first_run":
+                case "response_timer":
+                    break
+                default:
+                    set_prop(item, contents)
+                    break
+            } 
+        }
+        initialize()
+    }
+//-----------------------END OF PRIVATE FUNCTIONS-------------------------
+
+} //close class fdc2112
+
+class Sensor {
+    
+    _name=null
+    _channel = null
+    _chip = null
+    _chip_prop = {
+        rcount = null
+        offset = null
+        settlecount = null
+        clock_dividers = null
+        drive_current = null
+        fin_sel = null
+        fref_divider = null
+}
+    
+    constructor(name, rCount=null, offset=null, settlecount=null, clockdividers=null, drivecurrent=null, finsel=null, frefdiv=null) {
+        _name=name
+        _chip_prop = {
+            rcount = rCount
+            offset = offset
+            settlecount = settlecount
+            clock_dividers = clockdividers
+            drive_current = drivecurrent
+            fin_sel = finsel
+            fref_divider = frefdiv
+        }
+    }
+    
+    function read() {return _chip.read_sensor(_channel)}
+    
+    function name() {return _name}
+    
+    function get_config () {
+        return {
+            name = _name
+            channel = _channel
+            chip = _chip.name()
+            rcount = get_value("rcount")
+            offset = get_value("offset")
+            settlecount = get_value("settlecount")
+            clock_dividers = get_value("clock_dividers")
+            drive_current = get_value("drive_current")
+            fin_sel = get_value("fin_sel")
+            fref_divider = get_value("fref_divider")
+        }
+    }
+
+    function get_value (variable) {
+        if (variable in _chip_prop) {
+            variable = variable + "_ch" + _channel
+            return _chip.get_value(variable)
+        }
+        else {return this["_" + variable]}
+    }
+    
+    function set_prop (property, value) {
+        if (property in _chip_prop) {_chip_prop[property] = value}
+        else {this["_" + property] = value}
+    }
+
+} //close class for Sensor
+
+ISYStatus <- {
+    inRange = {
+        text = "In range"
+        ISY = 0
+    }
+    tooLow = {
+        text = "Too Low"
+        ISY = 1
+    }
+    tooHigh = {
+        text = "Too high"
+        ISY = 2
+    }
+    unknown = {
+        text = "Unknown"
+        ISY = 3
+    }
+    outOfWater = {
+        text = "Out of water"
+        ISY = 4
+    }
+}
+
+//Sensor reading packages set up which sensor is to be read, how many samples to take, and how long between samples
+mainSensor <- {
+    channel = 0
+    samples = 5
+    interval = 0.3
+} //reading package for the level sensor
+immersionSensor <- {
+    channel = 1
+    samples = 5
+    interval = 0.3
+} //reading package for the immersiona detector
+drySensor <- {
+    channel = 2
+    samples = 5
+    interval = 0.3
+} //reading package for the always-dry sensor. I'm collecting but not using this data
+
+//Sensor level & calculation variables
+immersionLevel <- null
+mainLevel <- null
+dryLevel <- null
+waterLevel <- ISYStatus.unknown
+immersed <-  null
+lowHigh <- null
+temp <- null
+
+//operational variables
+wake_rate_long <- 900 //get a full sample every x seconds when in low power mode (86,400 = one day, 14,400 = 4 hours)
+wake_rate_short <- 59 //get a full sample every x seconds when in responsive mode
+responsive_period <- 180 //time the sensor will remain in easy-to-access mode after a cold start
+readings_table_size <- 12 //will send to server once we have xx entries in the table
+errors_table_size <- 5 //will send to server once we have xx entries in the table
+err_window <- 10 //seconds, will record one error within this window, others will be discarded
+lastErrTime <- 0 //used to help throttle errors
+connectFailureRetry <- 600 //how long to deep sleep if no servers were found
+contactServerReason <- "update_server" //need this as a global since the connection handler can't take multiple arguments
+shortSleeper <- null //timer used to wake Imp when in responsive mode
+
+connections <- [
+    {
+    "ssid" : "SSID #1", 
+    "pw" : "SSID #1 password" 
+    },
+    {
+    "ssid" : "SSID #2", 
+    "pw" : "SSID #2 password"
+    }
+]; //candidate wifi networks. Could use blinkup now that I have the sleep stuff figured out
+
+currentConnection <- 0;
+
+
+function init (pChip) {
+    //server.log("Case: init")
+    nv <- {}
+    nv = pChip
+    nv.response_timer <- time() //countdown to sensor deep sleep mode
+    nv.readings <- []
+    nv.errors <- []
+    nv.first_run <- true
+    agent.send("get_chip", "updateComplete")
+    sensor_0 <- Sensor("Initialize")
+    sensor_1  <- Sensor("Initialize")
+    sensor_2  <- Sensor("Initialize")
+    sensor_3 <- Sensor("Initialize")
+    sensor_package <- [sensor_0, sensor_1, sensor_2, sensor_3]
+    chip <- Fdc2112("Initialize", sensor_package)
+    chip.load_chip()
+    //printTable(chip._calibration)
+    measure()
+} //should only hit this on cold starts or when new calibrations are sent
+
+function wakeupAndMeasure () {
+    //server.log("Case: wakeup & measure")
+    sensor_0 <- Sensor("Initialize")
+    sensor_1  <- Sensor("Initialize")
+    sensor_2  <- Sensor("Initialize")
+    sensor_3 <- Sensor("Initialize")
+    sensor_package <- [sensor_0, sensor_1, sensor_2, sensor_3]
+    chip <- Fdc2112("Initialize", sensor_package)
+    nv.first_run <- false
+    chip.load_chip()
+    measure()
+} //warm starts begin here
+
+function measure() {
+    //server.log("Case: measure")
+    chip.set_value("sleep_mode_en", 0)
+    mainLevel = sample.bindenv(chip) (mainSensor)
+    immersionLevel = sample.bindenv(chip) (immersionSensor)
+    dryLevel = sample.bindenv(chip) (drySensor) //not currently using dry level
+    immersed = (immersionLevel[0] < chip._calibration.immersed_sensor_limit) ? true : false
+    lowHigh = (mainLevel[0] > chip._calibration.target_level) ? "low" : "high"
+    local delta = (math.abs(mainLevel[0].tofloat() - chip._calibration.target_level)) * 1.0
+    local deltaInches = delta/math.abs(chip._calibration.main_sensor_slope)
+    temp = get_temp() * (9.0/5.0) + 32.0
+    if (!immersed) {waterLevel = ISYStatus.outOfWater}
+    else if (mainLevel[1] > chip._calibration.turbulent) {waterLevel = ISYStatus.unknown} //too many waves to calculate
+    else if (delta <= chip._calibration.tolerance) {waterLevel = ISYStatus.inRange}
+    else if (lowHigh == "low") {waterLevel = ISYStatus.tooLow}
+    else if (lowHigh == "high") {waterLevel = ISYStatus.tooHigh}
+    else {server.error("Bad sensor data")}
+    //server.log("Main: " + mainLevel[0] + "   Var: " + mainLevel[1] + " Target: " + chip._calibration.target_level)
+    //server.log("Immersed: " + immersionLevel[0] + "   Var: " + immersionLevel[1])
+    //server.log("Temp: " + temp)
+    //server.log("\rLevel: " + mainLevel[0] + "\rImmersed: " + immersed + "\rLow High: " + lowHigh + "\rRaw delta: " + delta)
+    //server.log("Target: " + chip._calibration.target_level + "\rTolerance: " + chip._calibration.tolerance + "\rDelta inches: " + delta/math.abs(chip._calibration.main_sensor_slope))
+    chip.set_value("sleep_mode_en", 1)
+    storeReading([time(), mainLevel[0], mainLevel[1], immersionLevel[0], immersionLevel[1], dryLevel[0], dryLevel[1], temp, waterLevel, deltaInches, lowHigh, nv.first_run])//no break here since we should always store readings after making them
+}
+
+function storeReading (data) {
+    //server.log("Case: store reading")
+    local lastLevel = ISYStatus.unknown
+    if (!("readings" in nv)) {
+        storeError("No readings table in store_reading routine.")
+        server.error("No readings table in store_reading routine.")
+        contact_server("get_chip_specs")
+        return
+    }
+    if (nv.readings.len() > readings_table_size) {
+        storeError("Overflow readings table in store_reading routine.")
+        server.error("Overflow readings table in store_reading routine.")
+        contact_server("get_chip_specs")
+        return
+    }
+    else if (nv.readings.len() == 0) {
+        lastLevel = data[8]
+    }
+    else {
+        lastLevel = nv.readings.top()[8]
+    }
+    nv.readings.push(data)
+    //server.log("nv readings len " + nv.readings.len() + " lastLevel isy " + lastLevel.ISY + " waterLevel.ISY " + data[8].ISY)
+    if ((nv.readings.len() == readings_table_size) || (lastLevel.ISY != waterLevel.ISY) || (nv.first_run == true)) {
+        nv.first_run <- false
+        contact_server("update_server")    
+    }
+    else {
+        sleeping()
+    }
+} //saves the readings in nv until a server connection happens
+
+function storeError (data) {
+    //server.log("Case: store errors")
+    lastErrTime = time()
+    if (!("errors" in nv)) {
+        contact_server("get_chip_specs")()
+        return
+    }
+    if (nv.errors.len() > errors_table_size) {
+        nv.errors.push([time(), "error", data])
+        nv.errors.push([time(), "error", "Overflow errors table in store_reading routine."])
+        contact_server("update_server")
+        return
+    }
+    if (nv.errors.len() == errors_table_size) {
+        nv.errors.push([time(), "error", data])
+        contact_server("update_server")
+        return
+    }
+    if ((time() - lastErrTime) > err_window) {
+        nv.errors.push([time(), "error", data])
+        return
+    }
+} //saves errors in nv until a server connection happens
+
+//this function connects the device to the server
+function contact_server (reason) {
+    contactServerReason = reason
+    if (!server.isconnected()) {
+        connectOrFailToNextConnection()
+    }
+    else {
+        switch (reason) {
+            case "update_server": {
+                server.log("Updating server with readings...")
+                agent.send("log_readings", nv.readings)
+                nv.readings.resize(0)
+                agent.send("log_errors", nv.errors)
+                nv.errors.resize(0)
+                sleeping()
+                break
+            }
+            case "get_chip_specs": {
+                server.log("Requesting updated chip specs")
+                agent.send("get_chip", "update")
+                break
+            }
+        }
+    }    
+} //routine that'll fire up the connection for the stated reason
+
+function sleeping() {
+    //server.log("Case: sleep")
+        if ((time() - nv.response_timer) < responsive_period) {
+            server.log ("In responsive mode. Time remaining: " + (responsive_period - (time() - nv.response_timer)))
+            imp.setpowersave(true)
+            imp.onidle(function () {
+                shortSleeper = imp.wakeup(wake_rate_short, wakeupAndMeasure)
+            })
+        }
+        else {
+            server.log("In deep sleep mode. See you in " + wake_rate_long/3600.0 + " hours.")
+            server.flush(30)
+            if (shortSleeper) imp.cancelwakeup(shortSleeper);
+            imp.onidle (function() {server.sleepfor(wake_rate_long)})
+        }
+} //put device to sleep, either a short and responsive one or deep sleep
+
+//utility functions
+function sample (readingPackage) {
+    local x, count=0, delta = 0, mean = 0, M2 = 0, var = 0, reading = 0, giveup = 20
+    set_value("sleep_mode_en", 0)
+    do {
+        //server.log("Reading channel " + readingPackage.channel + " Count " + count)
+        reading = read_sensor(readingPackage.channel)
+        if (reading) {
+        //server.log("If reading " + reading)
+            count++
+            delta = reading - mean
+            mean = mean + delta/count
+            M2 = M2 + delta * (reading - mean)
+        }
+        else if (!giveup--) {
+        //server.log("Else If")
+            server.log("Sensor off line.")
+            set_value("sleep_mode_en", 1)
+            return
+        }
+        //server.log("Out reading package interval " + readingPackage.interval)
+        imp.sleep(readingPackage.interval)
+        //server.log("back")
+    } while(count < readingPackage.samples)
+        //server.log("Out 2")
+    var = (count < 2) ? null : M2/(count-1)
+//    print_readings(readingPackage.channel, mean, var)
+    set_value("sleep_mode_en", 1)
+    return [mean, var]
+} //utility to read and average sensors
+function outputReadable (data) {
+    if (data == null) {return null}
+    local str=""
+    foreach(a in data) str+=format("0x%02x ", a)
+    return str
+} //used this to troubleshoot chip transactions
+function exerciseChip(target, read_only = true) { //dumps the name of all registers, their initial value, and exercises each of them by writing a '1' and providing confirmation
+    server.log("\rOBJECT\r-------CHIP-------\r")
+        server.log("Chip: " + target._name)
+        foreach (register, value in target._chip_prop) {server.log("     " + register + ": " + value)}
+        server.log("\r\r")
+    server.log("\r\r-------SENSORS-------\r")
+    foreach (sensor in target._sensors) {
+        server.log("Sensor: " + sensor._name)
+        server.log("     Channel: " + sensor._channel)
+        server.log("     Chip: " + sensor._chip._name)
+        foreach (register, value in sensor._chip_prop)
+        server.log("     " + register + ": " + value)    
+    }
+    server.log("\r\rREADBACK\r-------CHIP-------\r")
+    foreach(name, value in target._registers) {
+    server.log(name + " " + format("0x%04x", target.get_value(name)))
+}
+    server.log("\r\rREADBACK\r-------CAL-------\r")
+    foreach(name, value in target._calibration) {
+    server.log(name + " " + value)
+}
+    if (!read_only) {
+    local input1 = 0x0000
+        foreach (parameterName, parameterTable in target._registers) {
+            local result = target.set_value(parameterName, input1, true)
+            target.reset()
+            if (!result) {
+                }
+            else {
+            server.log("Register: " + parameterName + "  Mask: " + format("0x%04x", target._registers[parameterName]["mask"]) + "  Reg Loc: " + format("0x%02x", target._registers[parameterName]["location"][0]))
+                foreach (key, value in result) {
+                //server.log("Name: " + parameterName + "  Key: " + key + "    Value: " + value)
+                    try {server.log("  Key: " + key + "    Value: " + format("0x%02x", value[0]) + " " + format("0x%02x", value[1]) + " " + format("0x%02x", value[2]))}
+                    catch (error) {try {server.log("  Key: " + key + "    Value: " + format("0x%02x", value[0]) + " " + format("0x%02x", value[1]))}
+                        catch (error) {try {server.log("  Key: " + key + "    Value: " + format("0x%02x", value[0]))}
+                            catch(error) {server.log("  Key: " + key + "    Value: " + format("0x%04x", value))}
+                        }
+                    }
+                }
+            }
+        }
+    }  
+} //spit out the chip registers
+function printTable(table) { //dumps the name of all registers, their initial value, and exercises each of them by writing a '1' and providing confirmation
+    foreach(name, value in table) {
+        server.log(name + " " + value)
+        imp.sleep(0.1)
+        try {
+            if (value.len() != 0) {
+                foreach (item, val in value) {
+                server.log("\tItem: " + item + " Value: " + val)
+                imp.sleep(0.1)
+                }
+            }
+            try {
+                if (val.len() != 0) {
+                    foreach (jar, thing in value) {
+                    server.log("\t\tItem: " + jar + " Value: " + thing)
+                    imp.sleep(0.1)
+                    }
+                }
+            }
+            catch (err) {continue}    
+        }    
+        catch (err) {continue}
+    }
+} //generic printer for a table
+function reportRSSI() {
+    local rssi = imp.rssi();
+    local bars = 5;
+    if (rssi < -87) {
+        bars = 0;
+    } else if (rssi < -82) {
+        bars = 1;
+    } else if (rssi < -77) {
+        bars = 2;
+    } else if (rssi < -72) {
+        bars = 3;
+    } else if (rssi < -67) {
+        bars = 4;
+    }
+
+    if (bars == 1) {
+        server.log("Signal Strength: " + rssi + "dBm (1 bar) on network " + imp.getssid());
+    } else {
+        server.log("Signal Strength: " + rssi + "dBm (" + bars + " bars) on network " + imp.getssid());
+    }
+    return([bars,imp.getssid()])
+} //logs rssi and saves in a variable that's sent to the server with other updates
+function scanNets() {
+    local wlans = imp.scanwifinetworks();
+    foreach (hotspot in wlans)
+    {
+        local string = format("%s is operating on channel %u with RSSI of %i ", hotspot.ssid, hotspot.channel, hotspot.rssi);
+        if (hotspot.open)
+        {
+            string = string + "and it is not password-protected.";
+        }
+        else
+        {
+            string = string + "and it is password-protected.";
+        }
+        
+        server.log(string);
+    }
+} //used this to troubleshoot connections
+
+
+//temperature functions
+function one_wire_reset(){
+    // Configure UART for 1-Wire RESET timing
+    
+    ow.configure(9600, 8, PARITY_NONE, 1, NO_CTSRTS)
+    ow.write(0xF0)
+    ow.flush()
+    if (ow.read() == 0xF0)
+    {
+        // UART RX will read TX if there's no device connected
+        
+        //server.log("No 1-Wire devices are present.")
+        return false
+    } 
+    else 
+    {
+        // Switch UART to 1-Wire data speed timing
+        
+        ow.configure(115200, 8, PARITY_NONE, 1, NO_CTSRTS)
+        return true
+    }
+}
+function one_wire_write_byte(byte){
+    for (local i = 0 ; i < 8 ; i++, byte = byte >> 1)
+    {
+        // Run through the bits in the byte, extracting the
+        // LSB (bit 0) and sending it to the bus
+        
+        one_wire_bit(byte & 0x01)
+    }
+} 
+function one_wire_read_byte(){
+    local byte = 0
+    for (local i = 0 ; i < 8 ; i++)
+    {
+        // Build up byte bit by bit, LSB first
+        
+        byte = (byte >> 1) + 0x80 * one_wire_bit(1)
+    }
+    
+    return byte
+}
+function one_wire_bit(bit){
+    bit = bit ? 0xFF : 0x00
+    ow.write(bit)
+    ow.flush()
+    local return_value = ow.read() == 0xFF ? 1 : 0
+    return return_value
+}
+function get_temp(){
+    local temp_LSB = 0
+    local temp_MSB = 0
+    local temp_celsius = 0
+    local temp_farenheit = 0
+    
+    // Run loop again in 5 seconds
+    
+
+    if (one_wire_reset())
+    {
+        one_wire_write_byte(0xCC)
+        one_wire_write_byte(0x44)
+        
+        imp.sleep(0.8)    // Wait for at least 750ms for data to be collated
+    
+        one_wire_reset()
+        one_wire_write_byte(0xCC)
+        one_wire_write_byte(0xBE)
+        
+        temp_LSB = one_wire_read_byte()
+        temp_MSB = one_wire_read_byte()
+    
+        one_wire_reset()   // Reset bus to stop sensor sending unwanted data
+    
+        temp_celsius = ((temp_MSB * 256) + temp_LSB) / 16.0
+        temp_farenheit = (temp_celsius * (1.8)) + 32
+        
+//        server.log(format("Temperature: %3.2f degrees C", temp_celsius))
+//        server.log(format("Temperature: %3.2f degrees F", temp_farenheit))
+
+    }
+    return temp_celsius
+}
+
+//connection handlers
+// Disconnects from current network (if required)
+// Tries connecting with the supplied ssid / pw
+// Executes the callback
+
+function changeWifi(ssid, pw, callback) {
+    if (server.isconnected()) {
+        // Server is connected, so make sure all the pending data has been sent... 
+        server.flush(30);
+        
+        // ... and disconnect from the server
+        server.disconnect();
+    }
+    
+    // Re-configure the imp's WiFi and attempt to connect
+    imp.setwificonfiguration(ssid, pw);
+    server.connect(callback, 30);
+}
+function connectOrFailToNextConnection(result = null) {
+    server.log("Case: establishing connection")
+    if (!server.isconnected()) {
+        storeError("Failed to connect to " + connections[currentConnection].ssid + " result code: " + result)
+        lastErrTime = time()
+        if (currentConnection >= connections.len()) {
+            // We've tried all the available networks without success, so put the imp to sleep for 10 minutes
+            imp.onidle(function() {
+                imp.deepsleepfor(connectFailureRetry);
+            });
+        } else {
+            // If there are still connections to try, grab current ssid and pw, and increment currentConnection
+            // for the next attempt (if connection fails)
+            local ssid = connections[currentConnection].ssid;
+            local pw = connections[currentConnection].pw;
+            currentConnection++;
+            
+            // Attempt to connect
+            changeWifi(ssid, pw, connectOrFailToNextConnection);
+        }
+    }
+    else {
+        agent.send("signal_report", reportRSSI())
+        contact_server(contactServerReason)
+    }  
+}
+function disconnectHandler(reason) {
+    //server.log("Disconnect Handler")
+    if (reason != SERVER_CONNECTED) {
+        // Loop through connections until we connect
+        storeError("Unexpected disconnect from " + connections[currentConnection].ssid + " result code: " + result)
+        currentConnection = 0;
+        connectOrFailToNextConnection();
+    }
+}
+server.onunexpecteddisconnect(disconnectHandler)
+
+agent.on("init_chip", init)
+
+ow <- hardware.uart57
+sensorShutdown <- hardware.pin8
+sensorShutdown.configure(DIGITAL_OUT,1)
+
+// Start of program
+
+
+
+/*sensor_0 <- Sensor("Initialize")
+sensor_1  <- Sensor("Initialize")
+sensor_2  <- Sensor("Initialize")
+sensor_3 <- Sensor("Initialize")
+sensor_package <- [sensor_0, sensor_1, sensor_2, sensor_3]
+chip <- Fdc2112("Initialize", sensor_package)*/
+
+if (!("nv" in getroottable())) {
+    contact_server("get_chip_specs")
+}
+else {
+    wakeupAndMeasure()
+}

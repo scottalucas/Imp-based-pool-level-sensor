@@ -1,0 +1,462 @@
+#require "Loggly.class.nut:1.0.1"
+
+// Bulk-send logs on demand
+loggly <- Loggly("{LOGGLY KEY", { "timeout" : 60, "limit" : 50 });
+
+local htmlSource = {
+    pageTop = @"<!DOCTYPE html>
+    <html>
+    <head>
+    <title>%s</title>
+    <meta http-equiv='refresh' content='120'>
+    <style>
+    h2 { font-family:Verdana;color:#3B6BB2; }
+    p { font-family:Verdana;padding-bottom:5px; }
+    b { color:#3B6BB2; }
+    </style>
+    </head>
+    <body><table style='width:100%%;border:0px;' cellpadding='20' align='center'>" //add a string with page title
+    tableTop = @"<tr><td align='left'><h2 align='center'>%s</h2></td></tr>
+    	<table style='width:40%%;border:1px solid #3B6BB2;border-collapse:collapse;' align='center' cellpadding='20'>
+    	<tr><td valign='top'>" //add a string with table title
+    tableBottom = @"</td></tr></table>"
+    formTop = @"<form align='center' method = '%s'>" //add a string with form type post or get
+	formBottom = @"	</form>"
+    pageBottom = @"</table></body></html>"
+    buttonRecal = @"<p><button align='center' type='submit' name = 'action' value='recal'>Recalibrate</button></p>"
+    buttonDefault = @"<p><button type='submit' name = 'action' value='def'>Reset to defaults</button></p>"
+    buttonSave = @"<p><button type='submit' name = 'action' value='save'>Save</button></p>"
+    buttonReturn = @"<p><button type='submit' name = 'action' value='return'>Return to status</button></p>"
+    buttonTryAgain = @"<p><button type='submit' name = 'action' value='recal'>Try again</button></p>"
+    formRecal = @"<tr><td><p><b>Current level is: </b>
+    		<input type='text' name='amt' value='Inches'><br><br>
+    		<input type='radio' name='level' value='low' checked><b> Too low</b><br>
+    		<input type='radio' name='level' value='high'><b> Too high</b><br>"
+	statusTable = @"<p><b>Last updated:</b> %i/%i/%i at %i:%02i </p><p><b>RSSI:</b> %i bars</p><p><b>Network:</b> %s</p><p><b>Temperature:</b> %.1f&deg;F</p><p><b>Status: </b> %s</p><p><b>Water level is </b> %.2f inches %s.</p>"
+	//%i: month %i: day %i: year %i: hour %i: minute %i: bars %s: current network %f: temp %s: status %f: level %s: high or low
+
+}
+
+//sensor config section
+local recipe = [[{"idx":0,"id":"data_ch0","value":"0x0710"},{"idx":1,"id":"data_ch1","value":"0x0846"},{"idx":2,"id":"data_ch2","value":"0x0820"},{"idx":3,"id":"data_ch3","value":"0x0"},{"idx":4,"id":"rcount_ch0","value":"0xffff"},{"idx":5,"id":"rcount_ch1","value":"0xffff"},{"idx":6,"id":"rcount_ch2","value":"0xffff"},{"idx":7,"id":"rcount_ch3","value":"0xffff"},{"idx":8,"id":"offset_ch0","value":"0x2af8"},{"idx":9,"id":"offset_ch1","value":"0x2af8"},{"idx":10,"id":"offset_ch2","value":"0x2af8"},{"idx":11,"id":"offset_ch3","value":"0x0bb8"},{"idx":12,"id":"settlecount_ch0","value":"0x0400"},{"idx":13,"id":"settlecount_ch1","value":"0x0400"},{"idx":14,"id":"settlecount_ch2","value":"0x0400"},{"idx":15,"id":"settlecount_ch3","value":"0x0400"},{"idx":16,"id":"clock_dividers_ch0","value":"0x1002"},{"idx":17,"id":"clock_dividers_ch1","value":"0x1002"},{"idx":18,"id":"clock_dividers_ch2","value":"0x1002"},{"idx":19,"id":"clock_dividers_ch3","value":"0x1001"},{"idx":20,"id":"status","value":"0x8044"},{"idx":21,"id":"error_config","value":"0x0001"},{"idx":22,"id":"config","value":"0x1e01"},{"idx":23,"id":"mux_config","value":"0xa20c"},{"idx":24,"id":"reset_dev","value":"0x0600"},{"idx":25,"id":"drive_current_ch0","value":"0x8400"},{"idx":26,"id":"drive_current_ch1","value":"0x7c00"},{"idx":27,"id":"drive_current_ch2","value":"0x7bc0"},{"idx":28,"id":"drive_current_ch3","value":"0x8800"},{"idx":29,"id":"manufacturer_id","value":"0x5449"},{"idx":30,"id":"device_id","value":"0x3054"}]]
+/*------------------BUILD THE SENSORS----------------------------
+----first create each sensor with the values needed by your specific sensor.
+----The order you create the sensors and the name you give them does not matter
+----here. The name you give each sensor is available for use in any GUI. The name 
+-----'not configured' should be used to define an unused sensor. The FDC 2112 
+-----supports up to 4 sensors. You should configure a minimal (name only) sensor 
+-----for every channel where a sensor is connected even if that channel's 
+-----configuration will be set with a recipe. You can reuse sensor definitions
+-----although if you do the sensor names will be the same for the channels using the
+-----same sensor defnition.
+*/
+local sensor_not_configured = {
+    name = "not configured"
+}
+local sensor_0 = {
+    name = "Main"
+    //rcount=0x2222 //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //offset=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //settlecount=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //clockdividers=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //drivecurrent=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //finsel=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //frefdiv=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+}
+local sensor_1 = {
+    name = "Immersed"
+    //rcount=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //offset=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //settlecount=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //clockdividers=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //drivecurrent=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //finsel=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //frefdiv=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+}
+local sensor_2 = {
+    name = "Air"
+    //rcount=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //offset=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //settlecount=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //clockdividers=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //drivecurrent=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //finsel=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //frefdiv=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+}
+local sensor_3 = {
+    name = "Not configured"
+    //rcount=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //offset=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //settlecount=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //clockdividers=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //drivecurrent=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //finsel=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+    //frefdiv=null //OPTIONAL, if not provided this will use the chip's defaults post reset
+}
+
+/*------------------MAKE THE SENSOR PACKAGE--------------------------------
+-----using the sensors you created above, create an array with the sensors
+-----ordered based on which channel each sensor is attached to. The first sensor
+-----in the array will be attached to FDC2112 channel 0, the second to channel 1,
+-----and so on. 
+-----If you don't want to change a sensor attached to a specific channel, then
+-----populate that position with "no change". If the channel does not have a sensor,
+-----populate that position with "not configured". When you want to update the sensor in a positoin,
+-----populate that position with the sensor created above.
+-----All positions must be populated. */
+
+//local sensor_package = [sensor_0, sensor_no_change, sensor_not_configured, sensor_3] 
+local sensor_package = [sensor_0, sensor_1, sensor_2, sensor_3]
+
+
+
+//sensor defaults. Note these are not used, hard coded until I figure out why they keep changing
+const main_sensor_slope_def = -75 // this is the slope per inch of immersion, using raw values reported by the FDC chip
+const immersed_sensor_limit_def = 2120 //above this value the sensor thinks it out of water. Below in the water.
+const target_level_def = 2800 //this is a default and is overwritten when you recalibrate the sensor
+const tolerance_def = 25 //this defines the "on target" range for the water level
+const turbulent_def = 5 //we can see if the water is flat or moving based on this value. The sensor returns "unknown" if there's too much wave action
+
+//ISY variables
+ISYStatus <- {
+    inRange = {
+        text = "In range"
+        ISY = 0
+    }
+    tooLow = {
+        text = "Too Low"
+        ISY = 1
+    }
+    tooHigh = {
+        text = "Too high"
+        ISY = 2
+    }
+    unknown = {
+        text = "Unknown"
+        ISY = 3
+    }
+    outOfWater = {
+        text = "Out of water"
+        ISY = 4
+    }
+    equipmentRunning = {
+        text = "Equipment running"
+        ISY = 5
+    }
+} //list of possible values to be sent to ISY
+ISYOperatingParams <- {
+    addr = "a.b.c.d" //put in ip address in this format. Don't forget that Imp is coming from outside your network, so you have to configure your router to map your ISY to a routable external IP address or domain name.
+    userPass = "username:password" //put in your username and password for your ISY
+    varSet = "xx" //the var number you're using in your ISY to turn the fill valve on or off    
+}
+
+
+currentReading <- []
+signal <- [99,"unknown"]
+lastUpdateTime <- {}
+tempF <- 0
+statusHtml <- format(htmlSource.tableTop, "Status") + "no data" + htmlSource.tableBottom
+
+/*------------------MAKE THE CHIP---------------------------------------
+-----every chip must have a name and a sensor package. Other values can be 
+-----configured if they differ from the defaults. Do not change
+-----the names of the table elements.
+
+-----The optional recipe follows the format output by the chip's evaluation board
+-----software and is a JSON file. The following behavior will occur:
+-----     * all register values (rcount, offset, settlecount, clockdividers,
+-----       drivecurrent, useInt, activeChan, sensorActivateSelect, refClkSrc, highCurrentDrv, 
+-----       rrSeq, deglitch, and outputGain):
+-----           * chip defaults are used UNLESS
+-----           * there is a recipe and then the recipe values will be written UNLESS
+-----           * non-null values are defined in your sensor and chip definition tables (above) - those values
+-----             will be written
+-----     * chip values for name, i2c, i2c speed, and i2c address are not included in the 
+-----       recipe file so they will adopt parameters you set here or they'll take
+-----       the defaults in the device constructor.
+-----     * sensors will be assigned to a channel on the chip based on their order in the sensor package
+*/
+//setup loop
+local chip = {
+    name = "My Pool" //REQUIRED
+    sensors = sensor_package //REQUIRED, sensors should be ordered based on which FDC2112 channel they use
+    recipe = recipe//OPTIONAL insert recipe JSON if using
+    //i2c = //OPTIONAL hardware.i2c12 is the default
+    //i2cSpeed = //OPTIONAL CLOCK_SPEED_400_KHZ is the default
+    addr = 0x54 //OPTIONAL 0x54 is the default
+    intb_dis = 1 //OPTIONAL defaults to recipe or chip default
+    //active_chan = //OPTIONAL, defaults to recipe or chip default
+    //sensor_activate_sel = //OPTIONAL, defaults to recipe or chip default
+    //ref_clk_src = //OPTIONAL, defaults to recipe or chip default
+    //high_current_drv = //OPTIONAL, defaults to recipe or chip default
+    rr_sequence = 0x01//OPTIONAL, defaults to recipe or chip default
+    deglitch = 0x05//OPTIONAL, defaults to recipe or chip default
+    //output_gain = //OPTIONAL, defaults to recipe or chip default
+    autoscan_en = 1 //OPTIONAL, defaults to recipe or chip default
+    calibration = {}
+}
+
+function update(readings) {
+    /*
+    [0] = time(), [1] mainLevel, [2] = mainLevel var, [3] = immersionLevel, 
+    [4] = immersionLevel var, [5] = dryLevel, [6] = dryLevel var, [7] = temp, 
+    [8] = waterLevel[text, ISY], [9] = delta, [10] = lowHigh, [11] = first_run)
+    */
+    currentReading = readings.pop()
+    lastUpdateTime = date(time() - 25200)
+    //tempF = currentReading[7] * (9.0/5.0) + 32.0
+    //local deltaIn = (currentReading[9] * 1.0) / math.abs(chip.calibration.main_sensor_slope)
+    //currentReading[9] = deltaIn
+    //statusHtml = format(htmlSource.tableTop, "Status") + format(htmlSource.statusTable, now.month + 1, lastUpdateTime.day, lastUpdateTime.year, lastUpdateTime.hour, lastUpdateTime.min, currentReading[7], currentReading[8].text, currentReading[9], currentReading[10]) + htmlSource.tableBottom
+    local ISYVars = getISYVars ()
+    if (ISYVars["4"] == 1 || ISYVars["5"] == 1 || ISYVars["9"] == 1) {
+        server.log ("Equipement is running, no ISY update")
+        currentReading[8] = ISYStatus.equipmentRunning
+    }
+    else {
+    server.log("Equipment not running")
+    server.log("Testing...would have updated ISY with: " + currentReading[8].text)
+    //isyHandler(currentReading[8].ISY)
+    }
+    statusHtml = format(htmlSource.tableTop, "Status") + format(htmlSource.statusTable, lastUpdateTime.month + 1, lastUpdateTime.day, lastUpdateTime.year, lastUpdateTime.hour, lastUpdateTime.min, signal[0], signal[1], currentReading[7], currentReading[8].text, currentReading[9], currentReading[10]) + htmlSource.tableBottom
+    readings.push(currentReading)
+    readings.reverse()
+    if (!currentReading[11] || readings.len() > 1) {readings.pop()}
+    log_readings (readings)
+}
+
+function signal_report (newSignal) {
+    signal = newSignal
+    if (currentReading.len() != 0 && lastUpdateTime.len() != 0) {
+    statusHtml = format(htmlSource.tableTop, "Status") + format(htmlSource.statusTable, lastUpdateTime.month + 1, lastUpdateTime.day, lastUpdateTime.year, lastUpdateTime.hour, lastUpdateTime.min, signal[0], signal[1], currentReading[7], currentReading[8].text, currentReading[9], currentReading[10]) + htmlSource.tableBottom
+    }
+}
+
+function requestHandler(request, response) {
+    // Serve up the HTML page with the pool data
+/*    foreach (item, value in request) {
+        server.log(item + " " + value)
+    }*/
+    try 
+    {
+        local data = http.urldecode(request.body)
+        local storedCal = server.load()
+        if ("action" in data) {
+            switch (data.action) {
+                case "recal":
+                    if (currentReading.len() == 0) {
+                        response.send(200, format(htmlSource.pageTop, "Error") + format(htmlSource.tableTop, "Error") + "Waiting for the first reading from the sensor" + format(htmlSource.formTop, "post") + htmlSource.buttonTryAgain + htmlSource.buttonReturn + htmlSource.formBottom + htmlSource.tableBottom + htmlSource.pageBottom)
+                        break
+                    }
+                    response.send(200, format(htmlSource.pageTop, "Recalibrate") + format(htmlSource.tableTop, "Recalibrate") + format(htmlSource.formTop, "post") + htmlSource.formRecal + htmlSource.buttonSave + htmlSource.buttonDefault + htmlSource.buttonReturn + htmlSource.formBottom + htmlSource.tableBottom + htmlSource.pageBottom)
+                    //server.log(pData.calC.target_level)
+                    break
+                case "def":
+                    set_cal(null, true)
+                    //print_calchip()
+                    response.header("Location", http.agenturl())
+                    response.send(302, "redirecting")
+                    break
+                case "save":
+                    if (data.amt == "Inches") {
+                        response.send(200, format(htmlSource.pageTop, "Error") + format(htmlSource.tableTop, "Error") + "A number is required in the 'level' field" + format(htmlSource.formTop, "post") + htmlSource.buttonTryAgain + htmlSource.buttonReturn + htmlSource.formBottom + htmlSource.tableBottom + htmlSource.pageBottom)
+                        break
+                    }
+                    chip.calibration.target_level = currentReading[1] + (data.amt.tofloat() * chip.calibration.main_sensor_slope * ((data.level == "low") ? 1 : -1 ))
+                    set_cal(chip.calibration)
+                    response.header("Location", http.agenturl())
+                    response.send(302, "redirecting")
+                    break
+                case "return":
+                    //server.log("redirecting return")
+                    response.header("Location", http.agenturl())
+                    response.send(302, "redirecting")
+                    break
+                default:
+                    break
+            }
+        }
+        else {
+        response.send(200, format(htmlSource.pageTop, "My Pool Status") + statusHtml + format(htmlSource.formTop, "post") + htmlSource.buttonRecal + htmlSource.formBottom + htmlSource.pageBottom)
+        }
+    } 
+    catch (err) 
+    {
+        response.send(500, "Agent Error: " + err);
+    }      
+}
+
+function isyHandler(status) {
+    //isy status: 5: equipment running; 4: oow; 3 - unknown; 2: too high; 1: too low; 0: ok
+    local headers = { 
+        "Realm" : "/"
+        "Authorization" : "Basic " + http.base64encode(ISYOperatingParams.userPass)
+    }
+    local request = http.get("https://" + ISYOperatingParams.addr + "/rest/vars/set/2/" + ISYOperatingParams.varSet + "/" + status, headers)
+    local response = request.sendsync()
+    local expression = regexp2(@".*RestResponse succeeded=""true"".*")
+    if (expression.match(response.body)) {
+        server.log ("Successfully updated ISY")
+    }
+    else {
+        server.log("Failed to update ISY")
+    }
+}
+
+function getISYVars () {
+    local headers = { 
+    "Realm" : "/"
+    "Authorization" : "Basic " + http.base64encode(ISYOperatingParams.userPass)
+    }
+    local request = http.get("https://" + ISYOperatingParams.addr + "/rest/vars/get/2", headers)
+    local response = request.sendsync()
+    local sIndexI = 0
+    local sIndexV = 0
+    local rexpI = regexp2(@"id=""([0-9]+)""")
+    local rexpV = regexp2(@"</init><val>([0-9]+)")
+    local resultI = array(2)
+    local resultV = array(2)
+    resultTable <- {}
+
+    do {
+        local resultI = rexpI.capture(response.body, sIndexI)
+        if (!(resultI && resultI.len() >1)) {break}
+        local idx = response.body.slice(resultI[1].begin, resultI[1].end)
+        sIndexV = resultI[1].end + 1
+        resultV = rexpV.capture(response.body, sIndexV)
+        if (!(resultV && resultV.len() >1)) {break}
+        local val = response.body.slice(resultV[1].begin, resultV[1].end)
+        //server.log (idx + " " + val)
+        sIndexI = resultV[1].end + 1
+        resultTable[idx] <- val.tointeger()
+
+    } while (sIndexI < response.body.len())
+    return resultTable
+} //parsing xml. Ugh.
+
+function log_readings (data) {
+    server.log("Logging " + data.len() + " new item(s) to Loggly...")
+    foreach (item, val in data) {
+        loggly.log({
+            "timestamp" : Loggly.ISODateTime(val[0]),
+            "Reading mean" : val[1],
+            "Reading var" : val[2],
+            "Wet level" : val[3],
+            "Wet var" : val[4],
+            "Dry level" : val[5],
+            "Dry var" : val[6],
+            "temp" : val[7],
+            "state" : val[8].text,
+            "Delta inches" : val[9],
+            "High low" : val[10],
+        })
+    }
+}
+
+function log_errors (data) {
+    if (data.len() == 0) {
+        server.log ("No errors logged this report cycle")
+    }
+    else {
+        foreach (item, val in data) {
+            loggly.log({
+                "timestamp" : Loggly.ISODateTime(val[0]),
+                "Type" : val[1],
+                "Message" : val[2],
+            })
+        }
+    }
+}
+
+function set_cal(cal_in, def = false) { //set def to true to load defaults
+    if (def) {
+        cal_in = {}
+        cal_in = {
+            main_sensor_slope = main_sensor_slope_def,
+            immersed_sensor_limit = immersed_sensor_limit_def,
+            target_level = target_level_def,
+            tolerance = tolerance_def,
+            turbulent = turbulent_def
+        }
+    }
+    server.log("Updating cal table, length " + cal_in.len() + " target " + cal_in.target_level + " immersed " + cal_in.immersed_sensor_limit + " slope " + cal_in.main_sensor_slope + " tolerance " + cal_in.tolerance + " turbulence " + cal_in.turbulent)
+    server.save({})
+    server.save(cal_in)
+    chip.calibration = server.load()
+    //server.log("Chip cal " + chip.calibration.target_level)
+    send_chip("update")
+}
+
+function print_calchip() {
+    server.log("Printing chip calibration table")
+    foreach (item, value in chip.calibration) {
+        server.log("Item: " + item + " Value: " + value)
+    }
+}
+
+function send_chip (updateFlag = null) { //"update" or "updateComplete"
+    switch (updateFlag) {
+        case "update": {
+            if (device.isconnected()) {
+                server.log("Sending updated chip specs")
+                device.send("init_chip", chip)
+            }
+            else {
+                server.log("Chip update pending")
+                device.onconnect(function () {send_chip("update")})
+            }
+            break
+        }
+        case "updateComplete": {
+            server.log("Chip update completed")
+            device.onconnect(no_updates)
+            break
+        }
+        default: {
+            server.log("Error in send_chip routine")
+        }
+    }
+}
+
+function printTable(table) { //dumps the name of all registers, their initial value, and exercises each of them by writing a '1' and providing confirmation
+    foreach(name, value in table) {
+        server.log(name + " " + value)
+        imp.sleep(0.1)
+        try {
+            if (value.len() != 0) {
+                foreach (item, val in value) {
+                server.log("\tItem: " + item + " Value: " + val)
+                imp.sleep(0.1)
+                }
+            }
+            try {
+                if (val.len() != 0) {
+                    foreach (jar, thing in value) {
+                    server.log("\t\tItem: " + jar + " Value: " + thing)
+                    imp.sleep(0.1)
+                    }
+                }
+            }
+            catch (err) {continue}    
+        }    
+        catch (err) {continue}
+    }
+}
+
+function no_updates (dummy = null) {
+    server.log("Device connected, no chip updates available.")
+}
+
+device.on("log_readings", update)
+device.on("log_errors", log_errors)
+device.on("get_chip", send_chip)
+device.on("signal_report", signal_report)
+http.onrequest(requestHandler)
+
+if (server.load().len() == 0) {
+    set_cal(null, true) //load chip defaults
+}
+else {
+    set_cal(server.load()) //get calibration from web UI
+}
+//send_chip()

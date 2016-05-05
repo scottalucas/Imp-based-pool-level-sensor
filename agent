@@ -208,16 +208,16 @@ function update(readings) {
     //local deltaIn = (currentReading[9] * 1.0) / math.abs(chip.calibration.main_sensor_slope)
     //currentReading[9] = deltaIn
     //statusHtml = format(htmlSource.tableTop, "Status") + format(htmlSource.statusTable, now.month + 1, lastUpdateTime.day, lastUpdateTime.year, lastUpdateTime.hour, lastUpdateTime.min, currentReading[7], currentReading[8].text, currentReading[9], currentReading[10]) + htmlSource.tableBottom
-    local ISYVars = getISYVars ()
+    local ISYVars = getISYVars () //comment out if you're not using ISY
     if (ISYVars["4"] == 1 || ISYVars["5"] == 1 || ISYVars["9"] == 1) {
         server.log ("Equipement is running, no ISY update")
         currentReading[8] = ISYStatus.equipmentRunning
-    }
+    }//comment out if you're not using ISY
     else {
     server.log("Equipment not running")
-    server.log("Testing...would have updated ISY with: " + currentReading[8].text)
-    //isyHandler(currentReading[8].ISY)
-    }
+    //server.log("Testing...would have updated ISY with: " + currentReading[8].text) // a debug line
+    isyHandler(currentReading[8].ISY)
+    }//comment out if you're not using ISY
     statusHtml = format(htmlSource.tableTop, "Status") + format(htmlSource.statusTable, lastUpdateTime.month + 1, lastUpdateTime.day, lastUpdateTime.year, lastUpdateTime.hour, lastUpdateTime.min, signal[0], signal[1], currentReading[7], currentReading[8].text, currentReading[9], currentReading[10]) + htmlSource.tableBottom
     readings.push(currentReading)
     readings.reverse()
